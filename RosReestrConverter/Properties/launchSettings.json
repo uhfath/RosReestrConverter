@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "RosReestrConverter": {
+      "commandName": "Project",
+      "commandLineArgs": "\"Тест КАС\\result(96).zip\""
+    }
+  }
+}
