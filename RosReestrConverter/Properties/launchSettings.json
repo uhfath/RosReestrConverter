@@ -2,7 +2,7 @@
   "profiles": {
     "RosReestrConverter": {
       "commandName": "Project",
-      "commandLineArgs": "\"Тест КАС\\result(96).zip\""
+      "commandLineArgs": "\"D:\\Projects\\RosReestrConverter\\RosReestrConverter\\bin\\Debug\\net5.0\\КАС ПРОГА\""
     }
   }
 }
