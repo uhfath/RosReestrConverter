@@ -14,6 +14,8 @@ namespace RosReestrConverter
 	internal static class Program
 	{
 		private const string LogFileName = "rosreestr.log";
+		private const string PostProcessFileName = "rosreestr_post.txt";
+		private const string TagsFileName = "rosreestr_tags.txt";
 		private const string UniqueFileNameTemplate = "{0}_({1}){2}";
 
 		private static readonly string InvalidChars = new(
@@ -23,13 +25,6 @@ namespace RosReestrConverter
 				.ToArray());
 
 		private static readonly Regex CleanerRegex = new($"[{Regex.Escape(InvalidChars)}]", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.CultureInvariant | RegexOptions.Compiled);
-
-		private static readonly IEnumerable<string> Tags = new[]
-		{
-			"/extract_base_params_room/room_record/address_room/address/address/readable_address",
-			"/extract_base_params_land/land_record/address_location/address/readable_address",
-			"/extract_base_params_build/build_record/address_location/address/readable_address",
-		};
 
 		private static TextWriter consoleOut;
 
@@ -52,14 +47,14 @@ namespace RosReestrConverter
 			Console.WriteLine("{0}\t{1}", DateTime.Now, text);
 		}
 
-		private static string GetNameFromXML(string file, ZipArchiveEntry entry)
+		private static string GetNameFromXML(HashSet<string> tags, string file, ZipArchiveEntry entry)
 		{
 			Log("Получение имени: {0}", entry.Name);
 
 			using var stream = entry.Open();
 			var document = XDocument.Load(stream);
 
-			var name = Tags
+			var name = tags
 				.Select(t => document.XPathSelectElement(t)?.Value)
 				.Where(v => !string.IsNullOrWhiteSpace(v))
 				.SingleOrDefault();
@@ -87,6 +82,32 @@ namespace RosReestrConverter
 			return filename;
 		}
 
+		private static HashSet<string> LoadTags() =>
+			File.ReadAllLines(TagsFileName)
+				.ToHashSet();
+
+		private static HashSet<string> LoadPostProcess()
+		{
+			if (File.Exists(PostProcessFileName))
+			{
+				return File.ReadAllLines(PostProcessFileName)
+					.ToHashSet();
+			}
+
+			return Enumerable.Empty<string>().ToHashSet();
+		}
+
+		private static string PostProcess(HashSet<string> postProcessors, string filename)
+		{
+			Log("Пост обработка");
+			foreach (var post in postProcessors)
+			{
+				filename = filename.Replace(post, string.Empty, StringComparison.OrdinalIgnoreCase).Trim();
+			}
+
+			return filename;
+		}
+
 		static Program()
 		{
 			InitLog();
@@ -101,8 +122,13 @@ namespace RosReestrConverter
 					.Where(f => File.Exists(f))
 					.Where(f => string.Equals(Path.GetExtension(f), ".zip", StringComparison.OrdinalIgnoreCase)));
 
-			Log("Всего файлов: {0}", files.Count());
+			var tags = LoadTags();
+			Log("Тэгов: {0}", tags.Count);
 
+			var postProcessors = LoadPostProcess();
+			Log("Записей пост. обработки: {0}", postProcessors.Count);
+
+			Log("Всего файлов: {0}", files.Count());
 			foreach (var file in files)
 			{
 				Log("Обработка: {0}", Path.GetFileNameWithoutExtension(file));
@@ -115,11 +141,11 @@ namespace RosReestrConverter
 				var pdfEntry = archive.Entries
 					.Single(e => string.Equals(Path.GetExtension(e.Name), ".pdf", StringComparison.OrdinalIgnoreCase));
 
-				var pdfName = GetNameFromXML(file, xmlEntry);
+				var pdfName = GetNameFromXML(tags, file, xmlEntry);
 				var output = EnsureUniqueFileName(pdfName + ".pdf");
+				output = PostProcess(postProcessors, output);
 
-				Log("Итоговое имя файла: {0}", pdfName);
-
+				Log("Итоговое имя файла: {0}", output);
 				pdfEntry.ExtractToFile(output, true);
 			}
 		}

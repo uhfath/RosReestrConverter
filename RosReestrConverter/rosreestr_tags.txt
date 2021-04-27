@@ -1,0 +1,3 @@
+/extract_base_params_room/room_record/address_room/address/address/readable_address
+/extract_base_params_land/land_record/address_location/address/readable_address
+/extract_base_params_build/build_record/address_location/address/readable_address
