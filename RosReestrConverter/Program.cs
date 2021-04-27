@@ -28,11 +28,14 @@ namespace RosReestrConverter
 
 		private static TextWriter consoleOut;
 
+		private static string CombineAppPath(string path) =>
+			Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path);
+
 		private static void InitLog()
 		{
 			consoleOut = Console.Out;
 
-			var writer = new StreamWriter(File.Create(LogFileName))
+			var writer = new StreamWriter(File.Create(CombineAppPath(LogFileName)))
 			{
 				AutoFlush = true,
 			};
@@ -83,14 +86,14 @@ namespace RosReestrConverter
 		}
 
 		private static HashSet<string> LoadTags() =>
-			File.ReadAllLines(TagsFileName)
+			File.ReadAllLines(CombineAppPath(TagsFileName))
 				.ToHashSet();
 
 		private static HashSet<string> LoadPostProcess()
 		{
-			if (File.Exists(PostProcessFileName))
+			if (File.Exists(CombineAppPath(PostProcessFileName)))
 			{
-				return File.ReadAllLines(PostProcessFileName)
+				return File.ReadAllLines(CombineAppPath(PostProcessFileName))
 					.ToHashSet();
 			}
 
@@ -142,8 +145,7 @@ namespace RosReestrConverter
 					.Single(e => string.Equals(Path.GetExtension(e.Name), ".pdf", StringComparison.OrdinalIgnoreCase));
 
 				var pdfName = GetNameFromXML(tags, file, xmlEntry);
-				var output = EnsureUniqueFileName(pdfName + ".pdf");
-				output = PostProcess(postProcessors, output);
+				var output = EnsureUniqueFileName(PostProcess(postProcessors, pdfName) + ".pdf");
 
 				Log("Итоговое имя файла: {0}", output);
 				pdfEntry.ExtractToFile(output, true);
