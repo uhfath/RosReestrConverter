@@ -1,8 +1,8 @@
 {
   "profiles": {
     "RosReestrConverter": {
-        "commandName": "Project",
-        "commandLineArgs": "\"D:\\Projects\\RosReestrConverter\\RosReestrConverter\\bin\\Debug\\net5.0\\result(новый формат).zip\""
+      "commandName": "Project",
+      "commandLineArgs": "\"E:\\Downloads\\Telegram Desktop\\новый.zip\""
     }
   }
 }

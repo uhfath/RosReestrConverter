@@ -142,7 +142,8 @@ namespace RosReestrConverter
 					.Single(e => string.Equals(Path.GetExtension(e.Name), ".xml", StringComparison.OrdinalIgnoreCase));
 
 				var pdfEntry = archive.Entries
-					.Single(e => string.Equals(Path.GetExtension(e.Name), ".pdf", StringComparison.OrdinalIgnoreCase));
+					//.Single(e => string.Equals(Path.GetExtension(e.Name), ".pdf", StringComparison.OrdinalIgnoreCase));
+					.Single(e => string.Equals(e.Name, Path.ChangeExtension(xmlEntry.Name, ".pdf"), StringComparison.OrdinalIgnoreCase));
 
 				var pdfName = GetNameFromXML(tags, file, xmlEntry);
 				var output = EnsureUniqueFileName(PostProcess(postProcessors, pdfName) + ".pdf");
